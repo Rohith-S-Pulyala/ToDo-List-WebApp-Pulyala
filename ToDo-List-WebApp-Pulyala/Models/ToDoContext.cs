@@ -1,6 +1,7 @@
 ﻿using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.EntityFrameworkCore;
 using ToDo_List_WebApp_Pulyala.Models;
+using ToDo_List_WebApp_Pulyala.Enums;
 
 namespace ToDo_List_WebApp_Pulyala.Models
 {
@@ -30,7 +31,7 @@ namespace ToDo_List_WebApp_Pulyala.Models
                     Description = "Create the MVC app and folders", 
                     SprintNumber = 1, 
                     PointValue = 3,
-                    Status = "Done"
+                    Status = TicketStatus.Done
                 },
                 new Ticket
                 {
@@ -39,7 +40,7 @@ namespace ToDo_List_WebApp_Pulyala.Models
                     Description = "Build Create/Read/Update/Delete logic",
                     SprintNumber = 1,
                     PointValue = 5,
-                    Status = "In Progress"
+                    Status = TicketStatus.InProgress
                 },
                 new Ticket 
                 {
@@ -48,7 +49,7 @@ namespace ToDo_List_WebApp_Pulyala.Models
                     Description = "Fix header CSS",
                     SprintNumber = 2,
                     PointValue = 1,
-                    Status = "To Do"
+                    Status = TicketStatus.ToDo
                 }
             );
         }

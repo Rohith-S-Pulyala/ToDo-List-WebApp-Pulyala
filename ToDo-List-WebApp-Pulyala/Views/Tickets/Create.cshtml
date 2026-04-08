@@ -1,4 +1,5 @@
-﻿@model ToDo_List_WebApp_Pulyala.Models.Ticket
+﻿@using ToDo_List_WebApp_Pulyala.Enums
+@model ToDo_List_WebApp_Pulyala.Models.Ticket
 
 @{
     ViewData["Title"] = "Create";
@@ -34,7 +35,8 @@
             </div>
             <div class="form-group">
                 <label asp-for="Status" class="control-label"></label>
-                <select asp-for="Status" class="form-select" asp-items="@(new SelectList(ViewBag.Statuses))"> @*List of statuses to add into the ticket via ViewBag*@
+                <select asp-for="Status" class="form-select" asp-items="Html.GetEnumSelectList<TicketStatus>()"> @*List of statuses to add into the ticket via Enum*@
+                    <option value="">-- Change Status --</option>
                 </select>
                 <span asp-validation-for="Status" class="text-danger"></span>
             </div>

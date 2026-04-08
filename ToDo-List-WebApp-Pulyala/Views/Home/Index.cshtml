@@ -1,4 +1,5 @@
-﻿@model IEnumerable<Ticket>
+﻿@using ToDo_List_WebApp_Pulyala.Enums
+@model IEnumerable<ToDo_List_WebApp_Pulyala.Models.Ticket>
 
 
 <h2>Agile Ticket Board</h2>
@@ -9,15 +10,15 @@
         <form asp-action="Filter" method="post">
             <div class="mb-3">
                 <label class="form-label">Sprint:</label>
-                <select name="sprint" class="form-select" asp-items="@(new SelectList(ViewBag.Sprints, ViewBag.Filters.SprintId))"> @*Dropdown selection to choose Tickets at a certain sprint number.*@
-                    <option value="all">All Sprints</option> @*Placeholder to show all Sprints*@
+                <select name="sprint" class="form-select" asp-items="@(new SelectList(ViewBag.Sprints, ViewBag.Filters?.SprintId))"> @*Dropdown selection to choose Tickets at a certain sprint number.*@
+                    <option value="all" selected="@(ViewBag.Filters?.SprintId == "all")">All Sprints</option> @*Placeholder to show all Sprints*@
                 </select>
             </div>
 
             <div class="mb-3">
                 <label class="form-label">Status:</label>
                 <select name="status" class="form-select" asp-items="@(new SelectList(ViewBag.Statuses, ViewBag.Filters.StatusId))"> @*Dropdown selection to choose Tickets at a certain status.*@
-                    <option value="all">All Statuses</option>@*Placeholder to show all Statuses*@
+                    <option value="all" selected="@(ViewBag.Filters?.StatusId == "all")">All Statuses</option>@*Placeholder to show all Statuses*@
                 </select>
             </div>
 
@@ -54,14 +55,14 @@
                             <td>@ticket.SprintNumber</td>
                             <td>@ticket.PointValue</td>
                             <td>
-                                <span class="badge @(ticket.Status == "Done" ? "bg-success" :
-                                                     ticket.Status == "QA" ? "bg-warning text-dark" :
-                                                     ticket.Status == "In Progress" ? "bg-primary" : "bg-secondary")">
+                                <span class="badge @(ticket.Status == TicketStatus.Done ? "bg-success" :
+                                                     ticket.Status == TicketStatus.QA ? "bg-warning text-dark" :
+                                                     ticket.Status == TicketStatus.InProgress ? "bg-primary" : "bg-secondary")">
                                     @ticket.Status
-                                </span>
+                                </span> @*Values changed to Enum*@
                             </td>
                             <td>
-                                @if (ticket.Status != "Done")
+                                @if (ticket.Status != TicketStatus.Done)
                                 {
                                     <button type="submit" name="Id" value="@ticket.Id"
                                             class="btn btn-success btn-sm">

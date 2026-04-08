@@ -2,6 +2,7 @@ using Humanizer;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using ToDo_List_WebApp_Pulyala.Models;
+using ToDo_List_WebApp_Pulyala.Enums;
 
 /*
  * PROJECT: Agile Ticketing System (MVP)
@@ -17,30 +18,36 @@ namespace ToDo_List_WebApp_Pulyala.Controllers
     {
         private ToDoContext context;
 
-        public HomeController (ToDoContext ctx) => context = ctx;
+        public HomeController (ToDoContext ctx) => context = ctx; // Dependency Injection to give access to the Database.
 
-        // Handles main Agile Board view with hyphenated filter strings (e.g., "todo-1")
         public IActionResult Index(string id)
         {
+            // Initializes filter logic.
             var filters = new Filters(id);
             ViewBag.Filters = filters; // Pass filters to the view for dropdowns
 
-            // Loads dynamic data for sidebar dropdowns
-            ViewBag.Sprints = context.Tickets.Select(t => t.SprintNumber).Distinct().OrderBy(s => s).ToList();
-            ViewBag.Statuses = new List<string> { "To Do", "In Progress", "QA", "Done" };
+            // Loads dynamic data for sidebar dropdowns from DB and Enum
+            ViewBag.Sprints = context.Tickets.Select(t => t.SprintNumber).Distinct().OrderBy(s => s).ToList(); 
+            ViewBag.Statuses = Enum.GetValues(typeof(TicketStatus)).Cast<TicketStatus>().ToList(); // Updated to enum for database readiness.
 
+            // Starts the query
             IQueryable<Ticket> query = context.Tickets;
 
+            // Apply filters if they aren't "all"
             if (filters.HasStatus) {
-                query = query.Where(t => t.Status.ToLower() == filters.StatusId.ToLower());
+                // Parses Status back to enum type.
+                if (Enum.TryParse(filters.StatusId, true, out TicketStatus statusEnum)) {
+                    query = query.Where(t => t.Status == statusEnum);
+                }
             }
 
-            if (filters.HasSprint) {
+            if (filters.HasSprint && int.TryParse(filters.SprintId, out int sprintNum)) {
                 if (int.TryParse(filters.SprintId, out int sprintId)) {
                     query = query.Where(t => t.SprintNumber == sprintId);
                 }
             }
 
+            // Final list to be sent to the view
             var tasks = query.OrderBy(t => t.SprintNumber).ToList();
             return View(tasks);
         }
@@ -48,8 +55,12 @@ namespace ToDo_List_WebApp_Pulyala.Controllers
         [HttpPost]
         public IActionResult Filter(string status, string sprint) 
         {
+            // Lowercase values and uncertainty in "all"
+            string statusPart = status?.ToLower() ?? "all";
+            string sprintPart = sprint?.ToLower() ?? "all";
+
             // Builds ID string like "todo-1"
-            string id = $"{status}-{sprint}";
+            string id = $"{statusPart}-{sprintPart}";
             return RedirectToAction("Index", new { ID = id });
         }
 
@@ -62,9 +73,9 @@ namespace ToDo_List_WebApp_Pulyala.Controllers
                 // Simple logic to update status
                 ticket.Status = ticket.Status switch
                 {
-                    "To Do" => "In Progress",
-                    "In Progress" => "QA",
-                    "QA" => "Done",
+                    TicketStatus.ToDo => TicketStatus.InProgress,
+                    TicketStatus.InProgress => TicketStatus.QA,
+                    TicketStatus.QA => TicketStatus.Done,
                     _ => ticket.Status
                 };
                 context.SaveChanges();

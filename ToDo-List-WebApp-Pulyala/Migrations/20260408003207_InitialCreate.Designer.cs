@@ -11,8 +11,8 @@ using ToDo_List_WebApp_Pulyala.Models;
 namespace ToDo_List_WebApp_Pulyala.Migrations
 {
     [DbContext(typeof(ToDoContext))]
-    [Migration("20260325003434_SeedInitialTickets")]
-    partial class SeedInitialTickets
+    [Migration("20260408003207_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -47,9 +47,8 @@ namespace ToDo_List_WebApp_Pulyala.Migrations
                     b.Property<int>("SprintNumber")
                         .HasColumnType("int");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -63,7 +62,7 @@ namespace ToDo_List_WebApp_Pulyala.Migrations
                             Name = "Setup Project Structure",
                             PointValue = 3,
                             SprintNumber = 1,
-                            Status = "Done"
+                            Status = 3
                         },
                         new
                         {
@@ -72,7 +71,7 @@ namespace ToDo_List_WebApp_Pulyala.Migrations
                             Name = "Implement CRUD",
                             PointValue = 5,
                             SprintNumber = 1,
-                            Status = "In Progress"
+                            Status = 1
                         },
                         new
                         {
@@ -81,7 +80,7 @@ namespace ToDo_List_WebApp_Pulyala.Migrations
                             Name = "Fix Header CSS",
                             PointValue = 1,
                             SprintNumber = 2,
-                            Status = "To Do"
+                            Status = 0
                         });
                 });
 #pragma warning restore 612, 618

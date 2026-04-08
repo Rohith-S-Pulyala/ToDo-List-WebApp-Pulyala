@@ -12,12 +12,15 @@
         {
             FilterString = filterstring ?? "all-all";
             string[] filters = FilterString.Split('-') ;
-            StatusId = filters[0];
-            SprintId = filters.Length > 1 ? filters[1]: "all";
+
+
+            StatusId = filters.Length > 0 ? filters[0].ToLower() : "all";
+            // Ensures that if the segment is empty, it defaults to "all"
+            SprintId = filters.Length > 0 ? filters[1].ToLower() : "all";
         }
 
         // Read-Only properties to simplify conditional checks in the Controller/View
-        public bool HasStatus => StatusId.ToLower() != "all";
-        public bool HasSprint => SprintId.ToLower() != "all";
+        public bool HasStatus => !string.Equals(StatusId, "all", StringComparison.OrdinalIgnoreCase);
+        public bool HasSprint => !string.Equals(SprintId, "all", StringComparison.OrdinalIgnoreCase);
     }
 }

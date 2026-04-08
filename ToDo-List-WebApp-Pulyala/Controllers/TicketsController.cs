@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ToDo_List_WebApp_Pulyala.Models;
+using ToDo_List_WebApp_Pulyala.Enums;
 
 namespace ToDo_List_WebApp_Pulyala.Controllers
 {
@@ -23,9 +24,10 @@ namespace ToDo_List_WebApp_Pulyala.Controllers
         {
             IQueryable<Ticket> query = _context.Tickets;
 
-            if (!string.IsNullOrEmpty(statusFilter)) 
+            //Parses the string into the Enum
+            if (Enum.TryParse(statusFilter, out TicketStatus parsedStatus)) 
             {
-                query = query.Where(s => s.Status == statusFilter);
+                query = query.Where(s => s.Status == parsedStatus);
             }
 
             return View(await query.ToListAsync());
