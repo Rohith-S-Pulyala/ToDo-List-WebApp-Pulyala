@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using ToDo_List_WebApp_Pulyala.Models;
 using ToDo_List_WebApp_Pulyala.Enums;
+using ToDo_List_WebApp_Pulyala.Services;
+using System.Threading.Tasks;
+using ToDo_List_WebApp_Pulyala.Services;
 
 /*
  * PROJECT: Agile Ticketing System (MVP)
@@ -16,39 +19,33 @@ namespace ToDo_List_WebApp_Pulyala.Controllers
 {
     public class HomeController : Controller
     {
-        private ToDoContext context;
+        //private ToDoContext context;
+        private readonly IToDoListService _toDoListService;
+        private readonly ILogger<HomeController> _logger;
 
-        public HomeController (ToDoContext ctx) => context = ctx; // Dependency Injection to give access to the Database.
+        //public HomeController (ToDoContext ctx) => context = ctx; 
 
-        public IActionResult Index(string id)
+        public HomeController(IToDoListService toDoListService, ILogger<HomeController> logger) // Dependency Injection to give access to the Database.
+        {
+            _toDoListService = toDoListService;
+            _logger = logger;
+        }
+
+        public async Task<IActionResult> Index(string id)
         {
             // Initializes filter logic.
             var filters = new Filters(id);
             ViewBag.Filters = filters; // Pass filters to the view for dropdowns
 
-            // Loads dynamic data for sidebar dropdowns from DB and Enum
-            ViewBag.Sprints = context.Tickets.Select(t => t.SprintNumber).Distinct().OrderBy(s => s).ToList(); 
+
+            ViewBag.Sprints = await _toDoListService.GetUniqueSprintNumbersAsync();
+
+            // Loads dynamic data for sidebar dropdown from DB and Enum
             ViewBag.Statuses = Enum.GetValues(typeof(TicketStatus)).Cast<TicketStatus>().ToList(); // Updated to enum for database readiness.
 
-            // Starts the query
-            IQueryable<Ticket> query = context.Tickets;
+            // Asks the service for filtered list
+            var tasks = await _toDoListService.GetFilteredTicketsAsync(filters);
 
-            // Apply filters if they aren't "all"
-            if (filters.HasStatus) {
-                // Parses Status back to enum type.
-                if (Enum.TryParse(filters.StatusId, true, out TicketStatus statusEnum)) {
-                    query = query.Where(t => t.Status == statusEnum);
-                }
-            }
-
-            if (filters.HasSprint && int.TryParse(filters.SprintId, out int sprintNum)) {
-                if (int.TryParse(filters.SprintId, out int sprintId)) {
-                    query = query.Where(t => t.SprintNumber == sprintId);
-                }
-            }
-
-            // Final list to be sent to the view
-            var tasks = query.OrderBy(t => t.SprintNumber).ToList();
             return View(tasks);
         }
 
@@ -65,21 +62,9 @@ namespace ToDo_List_WebApp_Pulyala.Controllers
         }
 
         [HttpPost] // Transitions a ticket to the next logical Agile status
-        public IActionResult UpdateStatus(int id, string filter) 
+        public async Task <IActionResult> UpdateStatus(int id, string filter) 
         {
-            var ticket = context.Tickets.Find(id);
-            if (ticket != null) 
-            {
-                // Simple logic to update status
-                ticket.Status = ticket.Status switch
-                {
-                    TicketStatus.ToDo => TicketStatus.InProgress,
-                    TicketStatus.InProgress => TicketStatus.QA,
-                    TicketStatus.QA => TicketStatus.Done,
-                    _ => ticket.Status
-                };
-                context.SaveChanges();
-            }
+            await _toDoListService.ToggleTicketStatusAsync(id);
 
             //Redirect to index for existing filter string so the user stays on the same filtered view they looked at.
             return RedirectToAction("Index", new { ID = filter });

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using ToDo_List_WebApp_Pulyala.Models;
+using ToDo_List_WebApp_Pulyala.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,6 +8,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddDbContext<ToDoContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("ToDoContext")));
+
+builder.Services.AddScoped<IToDoListService, ToDoListService>();
 
 var app = builder.Build();
 

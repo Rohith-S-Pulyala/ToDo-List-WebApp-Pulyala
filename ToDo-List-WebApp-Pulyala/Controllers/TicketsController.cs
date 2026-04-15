@@ -7,30 +7,40 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ToDo_List_WebApp_Pulyala.Models;
 using ToDo_List_WebApp_Pulyala.Enums;
+using ToDo_List_WebApp_Pulyala.Services;
 
 namespace ToDo_List_WebApp_Pulyala.Controllers
 {
     public class TicketsController : Controller
     {
-        private readonly ToDoContext _context;
+        //private readonly ToDoContext _context;
 
-        public TicketsController(ToDoContext context)
+        private readonly IToDoListService _toDoListService;
+
+        //public TicketsController(ToDoContext context)
+        //{
+        //    _context = context;
+        //}
+
+        public TicketsController(IToDoListService toDoListService)
         {
-            _context = context;
+            _toDoListService = toDoListService;
         }
 
         // GET: Tickets
         public async Task<IActionResult> Index(string statusFilter)
         {
-            IQueryable<Ticket> query = _context.Tickets;
+            TicketStatus? parsedStatus = null;
 
             //Parses the string into the Enum
-            if (Enum.TryParse(statusFilter, out TicketStatus parsedStatus)) 
+            if (Enum.TryParse(statusFilter, out TicketStatus result)) 
             {
-                query = query.Where(s => s.Status == parsedStatus);
+               parsedStatus = result;
             }
 
-            return View(await query.ToListAsync());
+            var tickets = await _toDoListService.GetActiveTicketsAsync(parsedStatus);
+
+            return View(tickets);
         }
 
         // GET: Tickets/Details/5
@@ -41,8 +51,8 @@ namespace ToDo_List_WebApp_Pulyala.Controllers
                 return NotFound();
             }
 
-            var ticket = await _context.Tickets
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var ticket = await _toDoListService.GetTicketByIdAsync(id.Value);
+
             if (ticket == null)
             {
                 return NotFound();
@@ -67,8 +77,7 @@ namespace ToDo_List_WebApp_Pulyala.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(ticket);
-                await _context.SaveChangesAsync();
+                await _toDoListService.CreateTicketAsync(ticket);
                 return RedirectToAction("Index", "Home"); // REDIRECT: Redirects to Agile Board instead of Backlog List
             }
 
@@ -85,7 +94,8 @@ namespace ToDo_List_WebApp_Pulyala.Controllers
                 return NotFound();
             }
 
-            var ticket = await _context.Tickets.FindAsync(id);
+            var ticket = await _toDoListService.GetTicketByIdAsync(id.Value);
+
             if (ticket == null)
             {
                 return NotFound();
@@ -115,13 +125,12 @@ namespace ToDo_List_WebApp_Pulyala.Controllers
             {
                 try
                 {
-                    _context.Update(ticket);
-                    await _context.SaveChangesAsync();
+                    await _toDoListService.UpdateTicketAsync(ticket);
                 }
                 // Handles concurrency issues (e.g. ticket deleted by another user while editing)
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!TicketExists(ticket.Id))
+                    if (!await TicketExists(ticket.Id))
                     {
                         return NotFound();
                     }
@@ -143,8 +152,8 @@ namespace ToDo_List_WebApp_Pulyala.Controllers
                 return NotFound();
             }
 
-            var ticket = await _context.Tickets
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var ticket = await _toDoListService.GetTicketByIdAsync(id.Value);
+
             if (ticket == null)
             {
                 return NotFound();
@@ -158,19 +167,13 @@ namespace ToDo_List_WebApp_Pulyala.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var ticket = await _context.Tickets.FindAsync(id);
-            if (ticket != null)
-            {
-                _context.Tickets.Remove(ticket);
-            }
-
-            await _context.SaveChangesAsync();
+            await _toDoListService.DeleteTicketAsync(id);
             return RedirectToAction("Index", "Home"); // REDIRECT: Redirects to Agile Board instead of Backlog List
         }
 
-        private bool TicketExists(int id)
+        private async Task<bool> TicketExists(int id)
         {
-            return _context.Tickets.Any(e => e.Id == id);
+            return await _toDoListService.TicketExistsAsync(id);
         }
     }
 }

@@ -16,7 +16,7 @@
 
             StatusId = filters.Length > 0 ? filters[0].ToLower() : "all";
             // Ensures that if the segment is empty, it defaults to "all"
-            SprintId = filters.Length > 0 ? filters[1].ToLower() : "all";
+            SprintId = filters.Length > 1 ? filters[1].ToLower() : "all";
         }
 
         // Read-Only properties to simplify conditional checks in the Controller/View

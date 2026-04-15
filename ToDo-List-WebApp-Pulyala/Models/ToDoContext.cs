@@ -22,7 +22,7 @@ namespace ToDo_List_WebApp_Pulyala.Models
                 .IsRequired()
                 .HasMaxLength(100);
 
-            // Seed data
+            // Seed data to be set on the table.
             modelBuilder.Entity<Ticket>().HasData(
                 new Ticket 
                 { 
