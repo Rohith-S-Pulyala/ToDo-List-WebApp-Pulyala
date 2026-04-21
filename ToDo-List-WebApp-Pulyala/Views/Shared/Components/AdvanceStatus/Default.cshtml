@@ -1,0 +1,31 @@
+﻿@model ToDo_List_WebApp_Pulyala.Models.Ticket
+@using ToDo_List_WebApp_Pulyala.Enums
+
+@*
+    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
+*@
+<td>
+    @{
+        // Determine color based on the enum
+        string badgeClass = Model.Status switch
+        {
+            TicketStatus.Done => "bg-success",
+            TicketStatus.QA => "bg-warning text-dark",
+            TicketStatus.InProgress => "bg-primary",
+            _ => "bg-secondary" // ToDo
+        };
+    }
+    <span class="badge @badgeClass">
+        @Model.Status
+    </span>
+</td>
+<td>
+    @if (Model.Status != TicketStatus.Done)
+    {
+        <button type="submit" name="Id" value="@Model.Id" class="btn btn-success btn-sm">
+            Advance Status
+        </button>
+    }
+</td>
+
+    

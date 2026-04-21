@@ -62,14 +62,10 @@
                                 </span> @*Values changed to Enum*@
                             </td>
                             <td>
-                                @if (ticket.Status != TicketStatus.Done)
-                                {
-                                    <button type="submit" name="Id" value="@ticket.Id"
-                                            class="btn btn-success btn-sm">
-                                        Advance Status
-                                    </button>  @*Status update button used to update status until the status data shows done*@
-                                }
+                                @*Calls ViewComponent*@
+                                <vc:advance-status ticket="ticket"></vc:advance-status>
                             </td>
+                            
                         </tr>
                     }
                 </tbody>
